@@ -375,6 +375,11 @@ class MultiValuedVariant(AbstractVariant):
         # Otherwise we want all the values in `other` to be also in `self`
         return all(v in self.value for v in other.value)
 
+    def append(self, value):
+        """Add another value to this multi-valued variant."""
+        self._value = tuple(sorted((value,) + self._value))
+        self._original_value = ",".join(self._value)
+
 
 class SingleValuedVariant(MultiValuedVariant):
     """A variant that can hold multiple values, but one at a time."""
