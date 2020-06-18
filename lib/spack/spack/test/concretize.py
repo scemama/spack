@@ -618,11 +618,15 @@ class TestConcretize(object):
     ])
     @pytest.mark.regression('13361')
     def test_adjusting_default_target_based_on_compiler(
-            self, spec, best_achievable, current_host
+            self, spec, best_achievable, current_host, mock_targets
     ):
         best_achievable = llnl.util.cpu.targets[best_achievable]
+        print(best_achievable)
         expected = best_achievable if best_achievable < current_host \
             else current_host
+        print(expected)
+        print(spec)
+
         with spack.concretize.disable_compiler_existence_check():
             s = Spec(spec).concretized()
             assert str(s.architecture.target) == str(expected)
