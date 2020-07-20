@@ -540,7 +540,7 @@ class PyclingoDriver(object):
         cores = []   # unsatisfiable cores if they do not
 
         def on_model(model):
-            models.append((model.cost, model.symbols(shown=True)))
+            models.append((model.cost, model.symbols(shown=True, terms=True)))
 
         solve_result = self.control.solve(
             assumptions=self.assumptions,
@@ -1315,6 +1315,7 @@ class SpecBuilder(object):
             # print out unknown actions so we can display them for debugging
             if not action:
                 print("%s(%s)" % (name, ", ".join(str(a) for a in args)))
+                print("    ", args)
                 continue
 
             assert action and callable(action)
