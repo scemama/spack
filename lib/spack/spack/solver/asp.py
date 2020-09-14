@@ -484,8 +484,8 @@ class PyclingoDriver(object):
         )
 
     def one_of_iff(self, head, versions):
-        self.out.write("%s :- %s." % (head, AspOneOf(*versions)))
-        self.out.write("%s :- %s." % (AspOneOf(*versions), head))
+        self.out.write("%s :- %s.\n" % (head, AspOneOf(*versions)))
+        self.out.write("%s :- %s.\n" % (AspOneOf(*versions), head))
 
         at_least_1_sym = fn.at_least_1(*head.args).symbol()
         at_least_1 = self.backend.add_atom(at_least_1_sym)
@@ -1095,6 +1095,7 @@ class SpackSolverSetup(object):
 
     def define_compiler_version_constraints(self):
         compiler_list = spack.compilers.all_compiler_specs()
+        compiler_list = list(sorted(set(compiler_list)))
 
         for pkg_name, cspec in self.compiler_version_constraints:
             possible_compiler_versions = [
