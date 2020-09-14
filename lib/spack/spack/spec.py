@@ -2377,13 +2377,13 @@ class Spec(object):
         self.architecture.target.optimization_flags(self.compiler)
 
     def _new_concretize(self, tests=False):
+        import spack.solver.asp
+
         if not self.name:
             raise spack.error.SpecError(
                 "Spec has no name; cannot concretize an anonymous spec")
 
-        import spack.solver.asp
-
-        result = spack.solver.asp.solve([self])
+        result = spack.solver.asp.solve([self], dump=('asp', 'output'))
         if not result.satisfiable:
             result.print_cores()
             raise spack.error.UnsatisfiableSpecError(
