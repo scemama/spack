@@ -8,11 +8,11 @@ import llnl.util.lang
 
 import spack.architecture
 import spack.concretize
+import spack.error
 import spack.repo
 
-from spack.concretize import find_spec, NoValidVersionError
-from spack.error import SpecError, SpackError
-from spack.spec import Spec, CompilerSpec, ConflictsInSpecError
+from spack.concretize import find_spec
+from spack.spec import Spec, CompilerSpec
 from spack.version import ver
 from spack.util.mock_package import MockPackageMultiRepo
 import spack.compilers
@@ -493,12 +493,10 @@ class TestConcretize(object):
         assert s['dyninst'].satisfies('%gcc')
 
     def test_conflicts_in_spec(self, conflict_spec):
-        # Check that an exception is raised an caught by the appropriate
-        # exception types.
-        for exc_type in (ConflictsInSpecError, RuntimeError, SpecError):
-            s = Spec(conflict_spec)
-            with pytest.raises(exc_type):
-                s.concretize()
+        s = Spec(conflict_spec)
+        with pytest.raises(spack.error.SpackError):
+            s.concretize()
+        assert not s.concrete
 
     def test_no_conflixt_in_external_specs(self, conflict_spec):
         # clear deps because external specs cannot depend on anything
@@ -606,7 +604,7 @@ class TestConcretize(object):
     @pytest.mark.parametrize('spec', ['noversion', 'noversion-bundle'])
     def test_noversion_pkg(self, spec):
         """Test concretization failures for no-version packages."""
-        with pytest.raises(SpackError):
+        with pytest.raises(spack.error.SpackError):
             Spec(spec).concretized()
 
     @pytest.mark.parametrize('spec, best_achievable', [
