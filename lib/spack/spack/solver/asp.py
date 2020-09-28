@@ -499,17 +499,38 @@ class PyclingoDriver(object):
             [atoms[s] for s in body_symbols] + rule_atoms
         )
 
-    def integrity_constraint(self, body):
-        symbols, atoms = _normalize(body), {}
-        for s in symbols:
+    def integrity_constraint(self, clauses, default_negated=None):
+        """Add an integrity constraint to the solver.
+
+        Args:
+            clauses: clauses to be added to the integrity constraint
+            default_negated: clauses to be added to the integrity
+                constraint after with a default negation
+        """
+        symbols, negated_symbols, atoms = _normalize(clauses), [], {}
+        if default_negated:
+            negated_symbols = _normalize(default_negated)
+
+        for s in symbols + negated_symbols:
             atoms[s] = self.backend.add_atom(s)
 
-        rule_str = ":- {0}.".format(",".join(str(a) for a in symbols))
+        symbols_str = ",".join(str(a) for a in symbols)
+        if negated_symbols:
+            negated_symbols_str = ",".join(
+                "not " + str(a) for a in negated_symbols
+            )
+            symbols_str += ",{0}".format(negated_symbols_str)
+        rule_str = ":- {0}.".format(symbols_str)
         rule_atoms = self._register_rule_for_cores(rule_str)
 
         # print rule before adding
         self.out.write("{0}\n".format(rule_str))
-        self.backend.add_rule([], [atoms[s] for s in symbols] + rule_atoms)
+        self.backend.add_rule(
+            [],
+            [atoms[s] for s in symbols] +
+            [-atoms[s] for s in negated_symbols]
+            + rule_atoms
+        )
 
     def iff(self, expr1, expr2):
         self.rule(head=expr1, body=expr2)
@@ -715,8 +736,11 @@ class SpackSolverSetup(object):
                     'node_compiler_hard', 'node_compiler_version_satisfies'
                 ]
                 clauses = [x for x in clauses if x.name not in to_be_filtered]
+                external = fn.external(pkg.name)
 
-                self.gen.integrity_constraint(AspAnd(*clauses))
+                self.gen.integrity_constraint(
+                    AspAnd(*clauses), AspAnd(external)
+                )
 
     def available_compilers(self):
         """Facts about available compilers."""
@@ -885,8 +909,11 @@ class SpackSolverSetup(object):
         packages_yaml = spack.config.get("packages")
         self.gen.h1('External packages')
         for pkg_name, data in packages_yaml.items():
-            if 'externals' not in data:
+            if pkg_name == 'all':
                 continue
+
+            if 'externals' not in data:
+                self.gen.fact(fn.external(pkg_name).symbol(positive=False))
 
             self.gen.h2('External package: {0}'.format(pkg_name))
             # Check if the external package is buildable. If it is
@@ -1445,7 +1472,6 @@ class SpecBuilder(object):
             # print out unknown actions so we can display them for debugging
             if not action:
                 print("%s(%s)" % (name, ", ".join(str(a) for a in args)))
-                print("    ", args)
                 continue
 
             assert action and callable(action)

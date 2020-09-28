@@ -1130,10 +1130,7 @@ def installation_dir_with_headers(tmpdir_factory):
 
 @pytest.fixture(
     params=[
-        # FIXME: commented specs enter in multiple tests
-        # 'conflict%clang',
         'conflict%clang+foo',
-        # 'conflict-parent%clang',
         'conflict-parent@0.9^conflict~foo'
     ]
 )
