@@ -299,7 +299,7 @@ class TestConcretize(object):
         provides one.
         """
         s = Spec('hypre ^openblas-with-lapack ^netlib-lapack')
-        with pytest.raises(spack.spec.MultipleProviderError):
+        with pytest.raises(spack.error.SpackError):
             s.concretize()
 
     def test_no_matching_compiler_specs(self, mock_low_high_config):
