@@ -97,9 +97,10 @@ def current_host(request, monkeypatch):
     # this function is memoized, so clear its state for testing
     spack.architecture.get_platform.cache.clear()
 
+    monkeypatch.setattr(spack.platforms.test.Test, 'default', cpu)
+    monkeypatch.setattr(spack.platforms.test.Test, 'front_end', cpu)
     if not is_preference:
         monkeypatch.setattr(llnl.util.cpu, 'host', lambda: target)
-        monkeypatch.setattr(spack.platforms.test.Test, 'default', cpu)
         yield target
     else:
         with spack.config.override('packages:all', {'target': [cpu]}):
@@ -637,7 +638,7 @@ class TestConcretize(object):
 
         with spack.concretize.disable_compiler_existence_check():
             s = Spec(spec).concretized()
-            assert str(s.architecture.target) == str(expected)
+            assert str(s.architecture.target) == str(expected), str(best_achievable)
 
     @pytest.mark.regression('8735,14730')
     def test_compiler_version_matches_any_entry_in_compilers_yaml(self):
