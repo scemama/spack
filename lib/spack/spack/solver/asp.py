@@ -966,7 +966,11 @@ class SpackSolverSetup(object):
                 self.gen.newline()
                 spec_id = fn.external_spec(pkg_name, id)
                 clauses = self.spec_clauses(spec, body=True)
-                self.gen.iff(expr1=spec_id.symbol(), expr2=AspAnd(*clauses))
+                # This is an iff below, wish it could be written in a
+                # more compact form
+                self.gen.rule(head=spec_id.symbol(), body=AspAnd(*clauses))
+                for clause in clauses:
+                    self.gen.rule(clause, spec_id.symbol())
                 spec_id_list.append(spec_id)
 
             # If one of the external specs is selected then the package
