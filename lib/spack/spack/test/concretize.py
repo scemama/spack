@@ -313,7 +313,7 @@ class TestConcretize(object):
 
     def test_no_compilers_for_arch(self):
         s = Spec('a arch=linux-rhel0-x86_64')
-        with pytest.raises(spack.concretize.NoCompilersForArchError):
+        with pytest.raises(spack.error.SpackError):
             s.concretize()
 
     def test_virtual_is_fully_expanded_for_callpath(self):
@@ -629,15 +629,12 @@ class TestConcretize(object):
             self, spec, best_achievable, current_host, mock_targets
     ):
         best_achievable = llnl.util.cpu.targets[best_achievable]
-        print(best_achievable)
         expected = best_achievable if best_achievable < current_host \
             else current_host
-        print(expected)
-        print(spec)
 
         with spack.concretize.disable_compiler_existence_check():
             s = Spec(spec).concretized()
-            assert str(s.architecture.target) == str(expected), str(best_achievable)
+            assert str(s.architecture.target) == str(expected)
 
     @pytest.mark.regression('8735,14730')
     def test_compiler_version_matches_any_entry_in_compilers_yaml(self):
