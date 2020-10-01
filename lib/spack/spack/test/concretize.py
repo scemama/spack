@@ -379,13 +379,12 @@ class TestConcretize(object):
         assert spec['externalmodule'].compiler.satisfies('gcc')
 
     def test_nobuild_package(self):
-        got_error = False
+        """Test that a non-buildable package raise an error if no specs
+        in packages.yaml are compatible with the request.
+        """
         spec = Spec('externaltool%clang')
-        try:
+        with pytest.raises(spack.error.SpecError):
             spec.concretize()
-        except spack.concretize.NoBuildError:
-            got_error = True
-        assert got_error
 
     def test_external_and_virtual(self):
         spec = Spec('externaltest')
@@ -647,6 +646,7 @@ class TestConcretize(object):
         with pytest.raises(spack.concretize.UnavailableCompilerVersionError):
             s = Spec('mpileaks %gcc@4.5')
             s.concretize()
+            pass
 
         # An abstract compiler with a version list could resolve to 4.5.0
         s = Spec('mpileaks %gcc@4.5:')
