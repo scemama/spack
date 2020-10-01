@@ -73,7 +73,7 @@ def test_test_output_on_error(
         out = spack_test('run', 'test-error', fail_on_error=False)
 
     assert "TestFailure" in out
-    assert "FAILED: Command exited with status 1" in out
+    assert "Command exited with status 1" in out
 
 
 def test_test_output_on_failure(
