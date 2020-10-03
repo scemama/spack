@@ -645,11 +645,18 @@ def generate_key_index(key_prefix, tmpdir=None):
         for entry in web_util.list_url(key_prefix, recursive=False)
         if entry.endswith('.pub'))
 
+    remove_tmpdir = False
+    tmp = None
+
     keys_local = url_util.local_file_path(key_prefix)
     if keys_local:
         target = os.path.join(keys_local, 'index.json')
     else:
-        target = os.path.join(tmpdir, 'index.json')
+        tmp = tmpdir
+        if not tmp:
+            tmp = tempfile.mkdtemp()
+            remove_tmpdir = True
+        target = os.path.join(tmp, 'index.json')
 
     index = {
         'keys': dict(
@@ -660,11 +667,15 @@ def generate_key_index(key_prefix, tmpdir=None):
         sjson.dump(index, f)
 
     if not keys_local:
-        web_util.push_to_url(
-            target,
-            url_util.join(key_prefix, 'index.json'),
-            keep_original=False,
-            extra_args={'ContentType': 'application/json'})
+        try:
+            web_util.push_to_url(
+                target,
+                url_util.join(key_prefix, 'index.json'),
+                keep_original=False,
+                extra_args={'ContentType': 'application/json'})
+        finally:
+            if remove_tmpdir:
+                shutil.rmtree(tmp)
 
 
 def build_tarball(spec, outdir, force=False, rel=False, unsigned=False,
