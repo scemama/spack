@@ -14,10 +14,11 @@ class Opam(AutotoolsPackage):
        constraints, and a Git-friendly development workflow."""
 
     homepage = "https://opam.ocaml.org/"
-    url      = "https://github.com/ocaml/opam/releases/download/1.2.2/opam-full-1.2.2.tar.gz"
+    url      = "https://github.com/ocaml/opam/releases/download/2.0.7/opam-full-2.0.7.tar.gz"
 
     maintainers = ['scemama']
 
+    version('2.0.7', sha256='9c0dac1094ed624158fff13000cdfa8edbc96798d32b9fab40b0b5330f9490a2')
     version('2.0.6', sha256='7c4bff5e5f3628ad00c53ee1b044ced8128ffdcfbb7582f8773fb433e12e07f4')
     version('2.0.5', sha256='776c7e64d6e24c2ef1efd1e6a71d36e007645efae94eaf860c05c1929effc76f')
     version('2.0.4', sha256='debfb828b400fb511ca290f1bfc928db91cad74ec1ccbddcfdbfeff26f7099e5')
@@ -30,12 +31,13 @@ class Opam(AutotoolsPackage):
 
     # OCaml 4.10.0 has removed the -safe-string flag, which is necessary
     # for OPAM 1i (see docstring of setup_build_environment).
-    depends_on('ocaml@:4.09.0', type='build', when='@:1.2.2')
-    depends_on('ocaml', type='build', when='@2.0.0:')
+    depends_on('ocaml@:4.09.0', type=('run','build'), when='@:1.2.2')
+    depends_on('ocaml', type=('run','build'), when='@2.0.0:')
 
+    extendable = True
     parallel = False
 
-    sanity_check_is_file = ['bin/opam']
+#   sanity_check_is_file = ['bin/opam']
 
     @when('@:1.2.2')
     def setup_build_environment(self, env):
@@ -49,8 +51,23 @@ class Opam(AutotoolsPackage):
         # https://github.com/Homebrew/homebrew-core/blob/master/Formula/opam.rb
         env.set('OCAMLPARAM', 'safe-string=0,_')  # OCaml 4.06.0 compat
 
+    @when('@1.0.0:')
+    def setup_build_environment(self, env):
+        env.set('OPAMROOT', '{0}/opam'.format(prefix))
+
+    def setup_dependent_build_environment(self, env, dependent_spec):
+        env.set('OPAMROOT', '{0}/opam'.format(prefix))
+
     def build(self, spec, prefix):
         make('lib-ext')
         make()
         if spec.satisfies('@:1.2.2'):
             make('man')
+
+    def install(self, spec, prefix):
+        make('install')
+        opam = Executable('{0}/bin/opam'.format(prefix))
+        opam('init', '--no-setup')
+
+
+

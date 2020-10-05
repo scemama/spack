@@ -305,6 +305,29 @@ class RPackageTemplate(PackageTemplate):
         super(RPackageTemplate, self).__init__(name, *args, **kwargs)
 
 
+class OpamPackageTemplate(PackageTemplate):
+    """Provides appropriate overrides for Opam extensions"""
+    base_class_name = 'OpamPackage'
+
+    dependencies = """\
+    depends_on('opam', type=('build', 'run'))
+    depends_on('opam-ocaml', type=('build', 'run'))"""
+
+    body_def = """
+    def install(self):
+        opam = Executable("opam")
+        opam('install', '--yes', '.')"""
+
+    def __init__(self, name, *args, **kwargs):
+        # If the user provided `--name opam-xxx`, don't rename it opam-opam-xxx
+        if not name.startswith('opam-'):
+            # Make it more obvious that we are renaming the package
+            tty.msg("Changing package name from {0} to opam-{0}".format(name))
+            name = 'opam-{0}'.format(name)
+
+        super(OpamPackageTemplate, self).__init__(name, *args, **kwargs)
+
+
 class PerlmakePackageTemplate(PackageTemplate):
     """Provides appropriate overrides for Perl extensions
     that come with a Makefile.PL"""
@@ -436,26 +459,27 @@ class SIPPackageTemplate(PackageTemplate):
 
 
 templates = {
-    'autotools':  AutotoolsPackageTemplate,
     'autoreconf': AutoreconfPackageTemplate,
-    'cmake':      CMakePackageTemplate,
-    'bundle':     BundlePackageTemplate,
-    'qmake':      QMakePackageTemplate,
-    'maven':      MavenPackageTemplate,
-    'scons':      SconsPackageTemplate,
-    'waf':        WafPackageTemplate,
+    'autotools':  AutotoolsPackageTemplate,
     'bazel':      BazelPackageTemplate,
-    'python':     PythonPackageTemplate,
-    'r':          RPackageTemplate,
-    'perlmake':   PerlmakePackageTemplate,
-    'perlbuild':  PerlbuildPackageTemplate,
-    'octave':     OctavePackageTemplate,
-    'ruby':       RubyPackageTemplate,
-    'makefile':   MakefilePackageTemplate,
-    'intel':      IntelPackageTemplate,
-    'meson':      MesonPackageTemplate,
-    'sip':        SIPPackageTemplate,
+    'bundle':     BundlePackageTemplate,
+    'cmake':      CMakePackageTemplate,
     'generic':    PackageTemplate,
+    'intel':      IntelPackageTemplate,
+    'makefile':   MakefilePackageTemplate,
+    'maven':      MavenPackageTemplate,
+    'meson':      MesonPackageTemplate,
+    'octave':     OctavePackageTemplate,
+    'opam':       OpamPackageTemplate,
+    'perlbuild':  PerlbuildPackageTemplate,
+    'perlmake':   PerlmakePackageTemplate,
+    'python':     PythonPackageTemplate,
+    'qmake':      QMakePackageTemplate,
+    'r':          RPackageTemplate,
+    'ruby':       RubyPackageTemplate,
+    'scons':      SconsPackageTemplate,
+    'sip':        SIPPackageTemplate,
+    'waf':        WafPackageTemplate,
 }
 
 

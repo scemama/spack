@@ -27,6 +27,7 @@ from spack.build_systems.waf import WafPackage
 from spack.build_systems.octave import OctavePackage
 from spack.build_systems.python import PythonPackage
 from spack.build_systems.r import RPackage
+from spack.build_systems.opam import OpamPackage
 from spack.build_systems.perl import PerlPackage
 from spack.build_systems.ruby import RubyPackage
 from spack.build_systems.intel import IntelPackage
