@@ -1,4 +1,4 @@
-# Copyright 2013-2020 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -14,6 +14,8 @@ class Whizard(AutotoolsPackage):
     homepage = "whizard.hepforge.org"
     url      = "https://whizard.hepforge.org/downloads/?f=whizard-2.8.3.tar.gz"
     git      = "https://gitlab.tp.nt.uni-siegen.de/whizard/public.git"
+
+    tags = ['hep']
 
     maintainers = ['vvolkl']
 
@@ -55,8 +57,8 @@ class Whizard(AutotoolsPackage):
     variant('latex', default=False,
             description="data visualization with latex")
 
-    depends_on('ocaml', type='build', when="@3:")
-    depends_on('ocaml~force-safe-string', type='build', when="@:2.99.99")
+    depends_on('ocaml@4.02.3:', type='build', when="@3:")
+    depends_on('ocaml@4.02.3:~force-safe-string', type='build', when="@:2.99.99")
     depends_on('hepmc', when="hepmc=2")
     depends_on('hepmc3', when="hepmc=3")
     depends_on('lcio', when="+lcio")
@@ -68,6 +70,18 @@ class Whizard(AutotoolsPackage):
                when="+openloops")
     depends_on('texlive', when="+latex")
     depends_on('zlib')
+
+    conflicts('%gcc@:5.0.99',
+              msg='gfortran needs to support Fortran 2008. For more detailed information see https://whizard.hepforge.org/compilers.html')
+    conflicts('%gcc@6.5.0',
+              msg='Due to severe regressions, gfortran 6.5.0 can not be used. See https://whizard.hepforge.org/compilers.html')
+
+    conflicts('%intel@:17',
+              msg='The fortran compiler needs to support Fortran 2008. For more detailed information see https://whizard.hepforge.org/compilers.html')
+
+    # Trying to build in parallel leads to a race condition at the build step.
+    # See: https://github.com/key4hep/k4-spack/issues/71
+    parallel = False
 
     def setup_build_environment(self, env):
         # whizard uses the compiler during runtime,
