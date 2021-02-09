@@ -1,4 +1,4 @@
-# Copyright 2013-2020 Lawrence Livermore National Security, LLC and other
+# Copyright 2013-2021 Lawrence Livermore National Security, LLC and other
 # Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
@@ -34,6 +34,11 @@ class Groff(AutotoolsPackage, GNUMirrorPackage):
     # builds reliably.
     # patch('gropdf.patch')
     parallel = False
+
+    # The perl interpreter line in scripts might be too long as it has
+    # not been transformed yet. Call scripts with spack perl explicitly.
+    patch('BuildFoundries.patch')
+    patch('pdfmom.patch')
 
     def configure_args(self):
         args = [
